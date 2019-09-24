@@ -1,0 +1,80 @@
+<?php
+// This program to desing an oop calculator, with abiliyt to reverse operations and present the equations in a string form
+class calculator {
+    //This is the state of the calculator
+    
+    private $current;
+    private $opsLog = [];
+    
+    //The funcitons below: add, subtract, multiply and divide they are used to change the state of the object
+    function add($by = null) {
+        $this->current = $this->current + $by;
+        $this->log_op('+', $by);
+        return $this;
+    }
+
+    function subtract($by = null) {
+        $this->current = $this->current - $by;
+        $this->log_op('-', $by);
+        return $this;
+    }
+
+    function multiply($by = null) {
+        $this->current = $this->current * $by;
+        $this->log_op('*', $by);
+        return $this;
+    }
+
+    function divide($by = null) {
+        $this->current = $this->current / $by;
+        $this->log_op('/', $by);
+        return $this;
+    }
+
+    //This function is to update the state of the class
+    private function log_op($op, $followedBy) {
+        array_push($this->opsLog, [$op => $followedBy]);
+    }
+
+    //This function is to display the operations till this point in an equation form
+    function getFullEquation() {
+        $eqString = "NOTE: this is calculated by order from left to right and NOT by precendence of operations: \n0 ";
+        foreach ($this->opsLog as $log) {
+            $eqString .= key($log) . " " . $log[key($log)] . " ";
+        }
+        $eqString .= "= " . $this->evaluate() . "\n";
+        return $eqString;
+    }
+
+    //This function is to undo n amount of previous operations 
+    function undoOps($ops = 0) {
+        $slicedLog = array_reverse(array_slice($this->opsLog, -$ops));
+        foreach ($slicedLog as $log) {
+            if(!is_null($log['+'])) $this->subtract($log['+']);
+            if(!is_null($log['-'])) $this->add($log['-']); 
+            if(!is_null($log['*'])) $this->divide($log['*']);
+            if(!is_null($log['/'])) $this->multiply($log['/']);
+        }
+        return $this->evaluate();
+    }
+    
+    //This function returns the final result
+    function evaluate() {
+        return $this->current;
+    }
+}
+
+//Usage of the class
+$calc = new calculator;
+$calc->add(5)->multiply(2)->subtract(3)->multiply(2); //14
+print_r($calc->getFullEquation());
+
+
+$calc->undoOps(1); //7
+print_r($calc->getFullEquation());
+
+$calc->add(1); //8
+print_r($calc->getFullEquation());
+
+$calc->divide(2); //4
+print_r($calc->getFullEquation());
